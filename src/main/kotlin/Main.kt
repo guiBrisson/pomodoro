@@ -1,25 +1,19 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material.Button
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import ui.theme.PomodoroTheme
 
 @Composable
-@Preview
 fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
+    PomodoroTheme {
+        Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
+            Text("text")
         }
     }
 }
