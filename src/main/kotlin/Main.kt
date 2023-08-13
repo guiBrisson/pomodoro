@@ -14,16 +14,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import presentation.sidebar.SidebarScreen
 import ui.components.BaseContainer
 import ui.theme.PomodoroTheme
 import utils.setupMac
+import utils.setupWindows
+import javax.swing.UIManager
 
 fun main() = application {
     val state = rememberWindowState(width = 1280.dp, height = 832.dp)
 
+    UIManager.setLookAndFeel(FlatMacDarkLaf())
+
     Window(onCloseRequest = ::exitApplication, state = state) {
         setupMac()
+        setupWindows()
         App()
     }
 }

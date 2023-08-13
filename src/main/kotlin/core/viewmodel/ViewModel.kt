@@ -12,7 +12,6 @@ open class ViewModel {
 
     open fun onDispose() {
         viewModelScope.cancel()
-        println("viewModel scope is canceled")
     }
 }
 
