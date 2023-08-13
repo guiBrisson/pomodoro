@@ -4,10 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
@@ -22,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -29,13 +28,13 @@ fun SearchComponent(
     modifier: Modifier = Modifier,
     onSearch: (input: String) -> Unit,
 ) {
-    var currentState by remember { mutableStateOf(BoxState.Collapsed) }
+    var currentState by remember { mutableStateOf(SearchComponentState.Expanded) }
     val transition = updateTransition(currentState)
 
     val width by transition.animateDp { state ->
         when (state) {
-            BoxState.Collapsed -> 44.dp
-            BoxState.Expanded -> 400.dp
+            SearchComponentState.Collapsed -> 44.dp
+            SearchComponentState.Expanded -> 400.dp
         }
     }
 
@@ -61,18 +60,21 @@ fun SearchComponent(
             singleLine = true,
             decorationBox = { innerTextField ->
                 Row(modifier = Modifier.width(width), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = {
-                        currentState = if (currentState == BoxState.Expanded) {
-                            BoxState.Collapsed
-                        } else {
-                            BoxState.Expanded
-                        }
-                    }) {
+                    IconButton(
+                        modifier = Modifier.size(44.dp).pointerHoverIcon(icon = PointerIcon.Hand),
+                        onClick = {
+                            currentState = if (currentState == SearchComponentState.Expanded) {
+                                SearchComponentState.Collapsed
+                            } else {
+                                SearchComponentState.Expanded
+                            }
+                        },
+                    ) {
                         Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colors.onSurface)
                     }
 
                     Box(modifier = Modifier.weight(1f)) {
-                        if (input.isEmpty() && currentState == BoxState.Expanded) {
+                        if (input.isEmpty() && currentState == SearchComponentState.Expanded) {
                             Text(
                                 text = "Search...",
                                 style = textStyle.copy(color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
@@ -83,7 +85,7 @@ fun SearchComponent(
 
                     if (input.isNotEmpty()) {
                         IconButton(
-                            modifier = Modifier,
+                            modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
                             onClick = { input = "" }) {
                             Icon(Icons.Default.Clear, contentDescription = null, tint = MaterialTheme.colors.onSurface)
                         }
@@ -95,8 +97,8 @@ fun SearchComponent(
     }
 }
 
-private enum class BoxState {
+
+private enum class SearchComponentState {
     Collapsed,
     Expanded
 }
-
