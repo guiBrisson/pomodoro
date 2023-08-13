@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -91,9 +90,14 @@ private fun AddTaskBox(
 
     var name by remember { mutableStateOf("") }
     var times: Int? by remember { mutableStateOf(null) }
+    var isSaveButtonEnable by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+
+    LaunchedEffect(name, times) {
+        isSaveButtonEnable = (name.isNotEmpty() && times != null && times!! > 0)
     }
 
     Column(
@@ -193,8 +197,9 @@ private fun AddTaskBox(
             Button(
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).padding(start = 12.dp),
                 onClick = onSave,
+                enabled = isSaveButtonEnable,
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xff222222),
+                    backgroundColor = MaterialTheme.colors.primary,
                     contentColor = MaterialTheme.colors.onSurface,
                 )
             ) {
