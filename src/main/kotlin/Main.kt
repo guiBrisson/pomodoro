@@ -17,10 +17,13 @@ import androidx.compose.ui.window.rememberWindowState
 import presentation.sidebar.SidebarScreen
 import ui.components.BaseContainer
 import ui.theme.PomodoroTheme
+import utils.setupMac
 
 fun main() = application {
     val state = rememberWindowState(width = 1280.dp, height = 832.dp)
+
     Window(onCloseRequest = ::exitApplication, state = state) {
+        setupMac()
         App()
     }
 }
