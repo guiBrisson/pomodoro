@@ -20,8 +20,6 @@ dependencies {
     // Coroutines for swing
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
 
-    implementation("org.slf4j:slf4j-api:1.7.5")
-
     // FlatLaf - Look and Feel
     implementation("com.formdev:flatlaf:3.2")
 
@@ -30,7 +28,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
 
-    // Logger
+    // Logger - SLF4J
     implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("org.slf4j:slf4j-simple:1.7.25")
 
