@@ -7,12 +7,13 @@ import domain.model.Task
 import domain.repository.ITaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 class TaskRepository(
     private val taskDao: ITaskDao,
 ) : ITaskRepository {
-    override fun allTasks(): Flow<List<Task>> = flow {
-        emit(taskDao.selectAll().asDomain())
+    override fun allTasks(): Flow<List<Task>> {
+        return taskDao.selectAll().map { it.asDomain() }
     }
 
     override fun getTaskById(id: Int): Flow<Task?> = flow {
