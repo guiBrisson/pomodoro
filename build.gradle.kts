@@ -30,6 +30,10 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
 
+    // Logger
+    implementation("org.slf4j:slf4j-api:1.7.25")
+    implementation("org.slf4j:slf4j-simple:1.7.25")
+
     // SQLite
     implementation(dependencyNotation = "com.h2database:h2:2.1.214")
 
