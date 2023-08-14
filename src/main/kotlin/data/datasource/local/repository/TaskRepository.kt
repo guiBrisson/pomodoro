@@ -1,6 +1,6 @@
 package data.datasource.local.repository
 
-import data.datasource.local.dao.TaskDao
+import data.datasource.local.dao.ITaskDao
 import data.datasource.local.dto.CreateTaskDTO
 import data.datasource.local.entity.TaskEntity
 import domain.model.Task
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class TaskRepository(
-    private val taskDao: TaskDao,
+    private val taskDao: ITaskDao,
 ) : ITaskRepository {
     override fun allTasks(): Flow<List<Task>> = flow {
         emit(taskDao.selectAll().asDomain())

@@ -32,6 +32,9 @@ dependencies {
 
     // SQLite
     implementation(dependencyNotation = "com.h2database:h2:2.1.214")
+
+    // DI - Koin
+    implementation("io.insert-koin:koin-core:3.0.1")
 }
 
 compose.desktop {

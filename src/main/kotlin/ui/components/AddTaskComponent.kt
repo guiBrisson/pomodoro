@@ -22,10 +22,12 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import domain.model.Task
 
 @Composable
 fun AddTaskComponent(
     modifier: Modifier = Modifier,
+    onAddTask: (Task) -> Unit,
 ) {
     var currentState by remember { mutableStateOf(AddTaskComponentState.Collapsed) }
 
@@ -40,9 +42,10 @@ fun AddTaskComponent(
         AnimatedVisibility(currentState == AddTaskComponentState.Expanded) {
             AddTaskBox(
                 onCancel = {
-                   currentState = AddTaskComponentState.Collapsed
+                    currentState = AddTaskComponentState.Collapsed
                 },
                 onSave = {
+                    onAddTask(it)
                     currentState = AddTaskComponentState.Collapsed
                 },
             )
@@ -83,7 +86,7 @@ private fun AddTaskButton(
 private fun AddTaskBox(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit,
-    onSave: () -> Unit,
+    onSave: (Task) -> Unit,
 ) {
     val shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
     val focusRequester = remember { FocusRequester() }
@@ -196,7 +199,14 @@ private fun AddTaskBox(
 
             Button(
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).padding(start = 12.dp),
-                onClick = onSave,
+                onClick = {
+                    val task = Task(
+                        name = name,
+                        pomodoroAmount = times ?: 0,
+                        isCompleted = false,
+                    )
+                    onSave(task)
+                },
                 enabled = isSaveButtonEnable,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.primary,
