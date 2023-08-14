@@ -3,6 +3,7 @@ package data.datasource.local.dao
 import data.datasource.local.dto.TaskDTO
 import data.datasource.local.entity.TaskEntity
 import data.datasource.local.entity.TaskTable
+import kotlinx.coroutines.flow.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -10,6 +11,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class TaskDao(
     private val db: Database
 ) : ITaskDao {
+    private val _allTasks: MutableStateFlow<List<TaskEntity>> = MutableStateFlow(allTasks())
+    override fun selectAll(): StateFlow<List<TaskEntity>> = _allTasks.asStateFlow()
+
 
     override fun insert(task: TaskDTO): Int {
         return taskTransaction {
@@ -18,7 +22,7 @@ class TaskDao(
                 this.pomodoroAmount = task.pomodoroAmount
                 this.isCompleted = task.isCompleted
             }.id.value
-        }
+        }.also { _allTasks.update { allTasks() } }
     }
 
     override fun update(id: Int, updatedTask: TaskDTO): TaskEntity? {
@@ -30,7 +34,7 @@ class TaskDao(
                 isCompleted = updatedTask.isCompleted
             }
             task
-        }
+        }.also { _allTasks.update { allTasks() } }
     }
 
     override fun selectById(id: Int): TaskEntity? {
@@ -45,15 +49,16 @@ class TaskDao(
         }
     }
 
-    override fun selectAll(): List<TaskEntity> {
-        return taskTransaction {
-            TaskEntity.all().sortedBy { it.id }.toList()
-        }
-    }
-
     override fun delete(id: Int) {
         taskTransaction {
             TaskEntity.findById(id)?.delete()
+        }
+        _allTasks.update { allTasks() }
+    }
+
+    private fun allTasks(): List<TaskEntity> {
+        return taskTransaction {
+            TaskEntity.all().sortedBy { it.id }.toList()
         }
     }
 

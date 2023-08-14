@@ -23,8 +23,7 @@ class SidebarViewModel(
         viewModelScope.launch {
             when (event) {
                 is SidebarEvent.CreateNewTask -> {
-                    val id = taskRepository.newTask(event.task)
-                    println(id)
+                    taskRepository.newTask(event.task)
                 }
             }
         }
