@@ -1,7 +1,4 @@
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -18,6 +15,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import presentation.sidebar.SidebarScreen
 import ui.components.BaseContainer
 import ui.theme.PomodoroTheme
+import utils.OSUtils
 import utils.setupMac
 import utils.setupWindows
 import javax.swing.UIManager
@@ -38,7 +36,8 @@ fun main() = application {
 fun App() {
     PomodoroTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-            Row(modifier = Modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val macPadding = if (OSUtils.isMacOSX()) PaddingValues(top = 18.dp) else PaddingValues()
+            Row(modifier = Modifier.padding(macPadding).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 var arg by mutableStateOf("")
 
                 SidebarScreen(onSendArgs = { arg = it })
