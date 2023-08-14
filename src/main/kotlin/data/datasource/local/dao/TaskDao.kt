@@ -1,6 +1,6 @@
 package data.datasource.local.dao
 
-import data.datasource.local.dto.CreateTaskDTO
+import data.datasource.local.dto.TaskDTO
 import data.datasource.local.entity.TaskEntity
 import data.datasource.local.entity.TaskTable
 import org.jetbrains.exposed.sql.Database
@@ -11,7 +11,7 @@ class TaskDao(
     private val db: Database
 ) : ITaskDao {
 
-    override fun insert(task: CreateTaskDTO): Int {
+    override fun insert(task: TaskDTO): Int {
         return taskTransaction {
             TaskEntity.new {
                 this.name = task.name
@@ -21,8 +21,16 @@ class TaskDao(
         }
     }
 
-    override fun update(id: Int): TaskEntity {
-        TODO()
+    override fun update(id: Int, updatedTask: TaskDTO): TaskEntity? {
+        return taskTransaction {
+            val task = TaskEntity.findById(id)
+            task?.apply {
+                name = updatedTask.name
+                pomodoroAmount = updatedTask.pomodoroAmount
+                isCompleted = updatedTask.isCompleted
+            }
+            task
+        }
     }
 
     override fun selectById(id: Int): TaskEntity? {

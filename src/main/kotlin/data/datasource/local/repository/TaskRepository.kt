@@ -1,7 +1,7 @@
 package data.datasource.local.repository
 
 import data.datasource.local.dao.ITaskDao
-import data.datasource.local.dto.CreateTaskDTO
+import data.datasource.local.dto.TaskDTO
 import data.datasource.local.entity.TaskEntity
 import domain.model.Task
 import domain.repository.ITaskRepository
@@ -23,13 +23,23 @@ class TaskRepository(
         emit(taskDao.selectByName(name).asDomain())
     }
 
-    override suspend fun updateTask(task: Task): Task {
-        return taskDao.update(task.id!!).asDomain()
+    override suspend fun updateTask(task: Task): Task? {
+        task.id?.let { id ->
+            return taskDao.update(
+                id = id,
+                updatedTask = TaskDTO(
+                    name = task.name,
+                    pomodoroAmount = task.pomodoroAmount,
+                    isCompleted = task.isCompleted,
+                )
+            )?.asDomain()
+        }
+        return null
     }
 
     override suspend fun newTask(task: Task): Int {
         return taskDao.insert(
-            CreateTaskDTO(
+            TaskDTO(
                 name = task.name,
                 pomodoroAmount = task.pomodoroAmount,
                 isCompleted = task.isCompleted,
