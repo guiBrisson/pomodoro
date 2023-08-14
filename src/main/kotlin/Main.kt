@@ -12,6 +12,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
+import data.datasource.local.di.localDataModule
+import di.viewModelsModule
+import org.koin.core.context.startKoin
 import presentation.sidebar.SidebarScreen
 import ui.components.BaseContainer
 import ui.theme.PomodoroTheme
@@ -25,9 +28,14 @@ fun main() = application {
 
     UIManager.setLookAndFeel(FlatMacDarkLaf())
 
+    startKoin {
+        modules(localDataModule, viewModelsModule)
+    }
+
     Window(onCloseRequest = ::exitApplication, state = state) {
         setupMac()
         setupWindows()
+
         App()
     }
 }
