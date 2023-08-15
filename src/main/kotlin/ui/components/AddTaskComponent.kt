@@ -116,7 +116,7 @@ private fun AddTaskBox(
         BasicTextField(
             modifier = Modifier.focusRequester(focusRequester),
             value = name,
-            onValueChange = { name = it },
+            onValueChange = { if (it.length <= 360) name = it },
             textStyle = textStyle.copy(color = MaterialTheme.colors.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colors.onSurface),
             decorationBox = { innerTextField ->
