@@ -1,13 +1,8 @@
 package presentation.sidebar
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import core.viewmodel.rememberViewModel
@@ -16,7 +11,6 @@ import ui.components.AddTaskComponent
 import ui.components.BaseContainer
 import ui.components.SearchComponent
 import ui.components.TasksComponent
-import ui.theme.PomodoroTheme
 
 
 @Composable
@@ -31,7 +25,11 @@ fun SidebarScreen(
         modifier = modifier,
         uiState = uiState,
         onSendArgs = onSendArgs,
-        onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) }
+        onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) },
+        onTaskEdit = { viewModel.handleEvents(SidebarEvent.EditTask(it)) },
+        onTaskDone = { viewModel.handleEvents(SidebarEvent.MarkTaskAsDone(it)) },
+        onRestart = { viewModel.handleEvents(SidebarEvent.RestartTask(it)) },
+        onTaskDelete = { viewModel.handleEvents(SidebarEvent.DeleteTask(it)) },
     )
 }
 
@@ -41,21 +39,31 @@ internal fun SidebarScreen(
     uiState: SidebarUiState,
     onSendArgs: (String) -> Unit,
     onAddTask: (Task) -> Unit,
+    onTaskEdit: (Task) -> Unit,
+    onTaskDone: (Task) -> Unit,
+    onRestart: (Task) -> Unit,
+    onTaskDelete: (Task) -> Unit,
 ) {
     BaseContainer(modifier = modifier.width(340.dp).fillMaxHeight()) {
-        SearchComponent(onSearch = { onSendArgs(it) })
-        TasksComponent(modifier = Modifier.weight(1f), tasks = uiState.tasks, isLoading = uiState.loadingTasks)
-        AddTaskComponent(onAddTask = onAddTask)
-    }
-}
+        var taskToEdit: Task? by remember { mutableStateOf(null) }
 
-@Preview
-@Composable
-private fun PreviewSidebarScreen() {
-    PomodoroTheme {
-        Surface(color = MaterialTheme.colors.background) {
-            val state = SidebarUiState()
-            SidebarScreen(uiState = state, onSendArgs = { }, onAddTask = { })
-        }
+        SearchComponent(onSearch = { onSendArgs(it) })
+
+        TasksComponent(
+            modifier = Modifier.weight(1f),
+            tasks = uiState.tasks,
+            isLoading = uiState.loadingTasks,
+            onEdit = { taskToEdit = it },
+            onDone = onTaskDone,
+            onRestart = onRestart,
+            onDelete = onTaskDelete,
+        )
+
+        AddTaskComponent(
+            task = taskToEdit,
+            onAddTask = onAddTask,
+            onSaveEdit = { onTaskEdit(it); taskToEdit = null },
+            onCancel = { taskToEdit = null }
+        )
     }
 }

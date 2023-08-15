@@ -25,6 +25,19 @@ class SidebarViewModel(
                 is SidebarEvent.CreateNewTask -> {
                     taskRepository.newTask(event.task)
                 }
+                is SidebarEvent.DeleteTask -> {
+                    event.task.id?.let { taskRepository.deleteTask(it) }
+                }
+                is SidebarEvent.EditTask -> {
+                    taskRepository.updateTask(event.task)
+                }
+                is SidebarEvent.MarkTaskAsDone -> {
+                    val totalAmount = event.task.totalAmount
+                    taskRepository.updateTask(event.task.copy(isCompleted = true, amountDone = totalAmount))
+                }
+                is SidebarEvent.RestartTask -> {
+                    taskRepository.updateTask(event.task.copy(isCompleted = false, amountDone = 0))
+                }
             }
         }
     }
@@ -39,4 +52,8 @@ data class SidebarUiState(
 
 sealed interface SidebarEvent {
     data class CreateNewTask(val task: Task) : SidebarEvent
+    data class EditTask(val task: Task) : SidebarEvent
+    data class MarkTaskAsDone(val task: Task) : SidebarEvent
+    data class RestartTask(val task: Task) : SidebarEvent
+    data class DeleteTask(val task: Task) : SidebarEvent
 }

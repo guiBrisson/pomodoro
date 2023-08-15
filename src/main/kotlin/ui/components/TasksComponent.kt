@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -31,13 +32,16 @@ fun TasksComponent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     tasks: List<Task>?,
+    onEdit: (Task) -> Unit,
+    onDone: (Task) -> Unit,
+    onRestart: (Task) -> Unit,
+    onDelete: (Task) -> Unit,
 ) {
     var selectedTask: Task? by remember { mutableStateOf(null) }
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (isLoading) {
             CircularProgressIndicator()
-            return@Box
         } else {
             tasks?.let { tasks ->
                 if (tasks.isEmpty()) {
@@ -52,6 +56,13 @@ fun TasksComponent(
                                     task = task,
                                     isSelected = task == selectedTask,
                                     onClick = { selectedTask = task },
+                                    onEdit = { onEdit(task) },
+                                    onDone = { onDone(task) },
+                                    onRestart = { onRestart(task) },
+                                    onDelete = {
+                                        if (task == selectedTask) selectedTask = null
+                                        onDelete(task)
+                                    },
                                 )
                             }
                         }
@@ -113,6 +124,7 @@ private fun DotsMenuIconButton(
         modifier = modifier
             .clip(CircleShape)
             .clickable(mutableInteractions, indication = null, onClick = onClick)
+            .padding(2.dp)
             .pointerHoverIcon(PointerIcon.Hand),
     ) {
         Icon(painter = loadSvgPainter("icons/ic_vertical_menu.svg"), contentDescription = null)
@@ -125,8 +137,13 @@ private fun TaskItem(
     task: Task,
     isSelected: Boolean,
     onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDone: () -> Unit,
+    onRestart: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val backgroundColor = if (isSelected) MaterialTheme.colors.onSurface.copy(alpha = 0.15f) else Color.Unspecified
+    var dropdownExpanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -155,10 +172,61 @@ private fun TaskItem(
             color = nameColor,
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
-            Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
-            DotsMenuIconButton(onClick = { })
+        Box {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
+                Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
+                DotsMenuIconButton(onClick = { dropdownExpanded = true })
+            }
+            TaskDropdownMenu(
+                modifier = Modifier.align(Alignment.TopEnd),
+                expanded = dropdownExpanded,
+                task = task,
+                onDismissRequest = { dropdownExpanded = false },
+                onEdit = onEdit,
+                onDone = onDone,
+                onRestart = onRestart,
+                onDelete = onDelete,
+            )
+        }
+    }
+}
+
+@Composable
+fun TaskDropdownMenu(
+    modifier: Modifier = Modifier,
+    task: Task,
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onEdit: () -> Unit,
+    onDone: () -> Unit,
+    onRestart: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val itemTextStyle = TextStyle(fontSize = 14.sp)
+
+    DropdownMenu(
+        modifier = modifier,
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+    ) {
+        val itemModifier = Modifier.height(32.dp).pointerHoverIcon(PointerIcon.Hand)
+        DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onEdit() }) {
+            Text("Edit", style = itemTextStyle)
+        }
+
+        if (task.isCompleted) {
+            DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onRestart() }) {
+                Text("Restart", style = itemTextStyle)
+            }
+        } else {
+            DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onDone() }) {
+                Text("Mark as done", style = itemTextStyle)
+            }
+        }
+
+        DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onDelete() }) {
+            Text("Delete", style = itemTextStyle)
         }
     }
 }
