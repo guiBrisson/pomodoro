@@ -21,10 +21,14 @@ fun SidebarScreen(
     val viewModel: SidebarViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(uiState.selectedTask) {
+        onTaskSelected(uiState.selectedTask)
+    }
+
     SidebarScreen(
         modifier = modifier,
         uiState = uiState,
-        onTaskSelected = onTaskSelected,
+        onTaskSelected = { viewModel.handleEvents(SidebarEvent.SelectTask(it)) },
         onClearCompletedTasks = { viewModel.handleEvents(SidebarEvent.ClearCompletedTasks) },
         onClearAllTasks = { viewModel.handleEvents(SidebarEvent.ClearAllTasks) },
         onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) },
@@ -56,6 +60,7 @@ internal fun SidebarScreen(
         TasksComponent(
             modifier = Modifier.weight(1f),
             tasks = uiState.tasks,
+            selectedTask = uiState.selectedTask,
             onTaskSelected = onTaskSelected,
             isLoading = uiState.loadingTasks,
             onClearCompletedTasks = onClearCompletedTasks,

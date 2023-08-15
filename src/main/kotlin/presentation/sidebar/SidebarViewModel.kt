@@ -16,27 +16,44 @@ class SidebarViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     private val _uiState = MutableStateFlow(SidebarUiState())
-    val uiState: StateFlow<SidebarUiState> = combine(_allTasks, _uiState) { tasks, state ->
+    val uiState: StateFlow<SidebarUiState> = stateFlow()
+
+    private fun stateFlow() = combine(_allTasks, _uiState) { tasks, state ->
+        state.selectedTask?.let { selectedTask ->
+            tasks?.find { it.id == selectedTask.id }?.let {
+                updateSelectedTask(it)
+            }
+        }
         state.copy(tasks = tasks, loadingTasks = false)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), _uiState.value)
 
     fun handleEvents(event: SidebarEvent) {
         viewModelScope.launch(Dispatchers.IO) {
             when (event) {
+                is SidebarEvent.SelectTask -> updateSelectedTask(event.task)
+
                 is SidebarEvent.CreateNewTask -> {
                     taskRepository.newTask(event.task)
                 }
 
                 SidebarEvent.ClearAllTasks -> {
                     taskRepository.deleteAll()
+                    unselectedCurrentTask()
                 }
 
                 SidebarEvent.ClearCompletedTasks -> {
                     taskRepository.deleteCompleted()
+                    unselectedCurrentTask()
                 }
 
                 is SidebarEvent.DeleteTask -> {
-                    event.task.id?.let { taskRepository.deleteTask(it) }
+                    event.task.id?.let {
+                        taskRepository.deleteTask(it)
+
+                        if (_uiState.value.selectedTask?.id == it) {
+                            unselectedCurrentTask()
+                        }
+                    }
                 }
 
                 is SidebarEvent.EditTask -> {
@@ -55,15 +72,25 @@ class SidebarViewModel(
         }
     }
 
+    private fun unselectedCurrentTask() {
+        _uiState.update { it.copy(selectedTask = null) }
+    }
+
+    private fun updateSelectedTask(task: Task?) {
+        _uiState.update { it.copy(selectedTask = task) }
+    }
+
 }
 
 data class SidebarUiState(
     val loadingTasks: Boolean = true,
     val tasks: List<Task>? = null,
     val tasksError: Throwable? = null,
+    val selectedTask: Task? = null,
 )
 
 sealed interface SidebarEvent {
+    data class SelectTask(val task: Task?) : SidebarEvent
     data class CreateNewTask(val task: Task) : SidebarEvent
     object ClearCompletedTasks : SidebarEvent
     object ClearAllTasks : SidebarEvent

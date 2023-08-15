@@ -35,6 +35,7 @@ fun TasksComponent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     tasks: List<Task>?,
+    selectedTask: Task?,
     onTaskSelected: (Task?) -> Unit,
     onClearCompletedTasks: () -> Unit,
     onClearAllTasks: () -> Unit,
@@ -43,10 +44,6 @@ fun TasksComponent(
     onRestart: (Task) -> Unit,
     onDelete: (Task) -> Unit,
 ) {
-    var selectedTask: Task? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(selectedTask) { onTaskSelected(selectedTask) }
-
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (isLoading) {
             CircularProgressIndicator()
@@ -58,8 +55,8 @@ fun TasksComponent(
                     } else {
                         Column {
                             TaskTitle(
-                                onClearCompletedTasks = { onClearCompletedTasks(); selectedTask = null },
-                                onClearAllTasks = { onClearAllTasks(); selectedTask = null },
+                                onClearCompletedTasks = { onClearCompletedTasks() },
+                                onClearAllTasks = { onClearAllTasks() },
                             )
 
                             Divider(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp))
@@ -69,14 +66,11 @@ fun TasksComponent(
                                     TaskItem(
                                         task = task,
                                         isSelected = task == selectedTask,
-                                        onClick = { selectedTask = task },
+                                        onClick = { onTaskSelected(task) },
                                         onEdit = { onEdit(task) },
                                         onDone = { onDone(task) },
                                         onRestart = { onRestart(task) },
-                                        onDelete = {
-                                            if (task == selectedTask) selectedTask = null
-                                            onDelete(task)
-                                        },
+                                        onDelete = { onDelete(task) },
                                     )
                                 }
                             }
