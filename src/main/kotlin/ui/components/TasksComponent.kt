@@ -42,7 +42,7 @@ fun TasksComponent(
     onRestart: (Task) -> Unit,
     onDelete: (Task) -> Unit,
 
-) {
+    ) {
     var selectedTask: Task? by remember { mutableStateOf(null) }
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -56,8 +56,8 @@ fun TasksComponent(
                     } else {
                         Column {
                             TaskTitle(
-                                onClearCompletedTasks = onClearCompletedTasks,
-                                onClearAllTasks = onClearAllTasks,
+                                onClearCompletedTasks = { onClearCompletedTasks(); selectedTask = null },
+                                onClearAllTasks = { onClearAllTasks(); selectedTask = null },
                             )
 
                             Divider(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp))
