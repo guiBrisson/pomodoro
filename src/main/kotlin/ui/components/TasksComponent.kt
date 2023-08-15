@@ -19,6 +19,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import domain.model.Task
@@ -137,8 +139,25 @@ private fun TaskItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(modifier = Modifier.weight(1f), text = task.name, fontSize = 14.sp)
-        Row {
+        val nameColor = if (task.isCompleted) {
+            MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+        } else {
+            MaterialTheme.colors.onSurface
+        }
+
+        Text(
+            modifier = Modifier.weight(1f),
+            text = task.name,
+            fontSize = 14.sp,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
+            color = nameColor,
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
+            Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
             DotsMenuIconButton(onClick = { })
         }
     }

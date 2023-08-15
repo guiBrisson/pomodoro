@@ -19,7 +19,8 @@ class TaskDao(
         return taskTransaction {
             TaskEntity.new {
                 this.name = task.name
-                this.pomodoroAmount = task.pomodoroAmount
+                this.totalAmount = task.totalAmount
+                this.amountDone = task.amountDone
                 this.isCompleted = task.isCompleted
             }.id.value
         }.also { _allTasks.update { allTasks() } }
@@ -30,7 +31,8 @@ class TaskDao(
             val task = TaskEntity.findById(id)
             task?.apply {
                 name = updatedTask.name
-                pomodoroAmount = updatedTask.pomodoroAmount
+                totalAmount = updatedTask.totalAmount
+                amountDone = updatedTask.amountDone
                 isCompleted = updatedTask.isCompleted
             }
             task

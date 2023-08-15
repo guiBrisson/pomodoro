@@ -202,7 +202,8 @@ private fun AddTaskBox(
                 onClick = {
                     val task = Task(
                         name = name,
-                        pomodoroAmount = times ?: 0,
+                        totalAmount = times ?: 0,
+                        amountDone = 0,
                         isCompleted = false,
                     )
                     onSave(task)

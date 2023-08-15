@@ -30,7 +30,8 @@ class TaskRepository(
                 id = id,
                 updatedTask = TaskDTO(
                     name = task.name,
-                    pomodoroAmount = task.pomodoroAmount,
+                    totalAmount = task.totalAmount,
+                    amountDone = task.amountDone,
                     isCompleted = task.isCompleted,
                 )
             )?.asDomain()
@@ -42,7 +43,8 @@ class TaskRepository(
         return taskDao.insert(
             TaskDTO(
                 name = task.name,
-                pomodoroAmount = task.pomodoroAmount,
+                totalAmount = task.totalAmount,
+                amountDone = task.amountDone,
                 isCompleted = task.isCompleted,
             )
         )
@@ -60,7 +62,8 @@ class TaskRepository(
         return Task(
             id = this.id.value,
             name = this.name,
-            pomodoroAmount = this.pomodoroAmount,
+            totalAmount = this.totalAmount,
+            amountDone = this.amountDone,
             isCompleted = this.isCompleted
         )
     }
