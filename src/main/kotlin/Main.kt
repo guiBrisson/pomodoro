@@ -2,10 +2,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -14,6 +11,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import data.datasource.local.di.localDataModule
 import di.viewModelsModule
+import domain.model.Task
 import org.koin.core.context.startKoin
 import presentation.sidebar.SidebarScreen
 import ui.components.BaseContainer
@@ -45,12 +43,17 @@ fun App() {
     PomodoroTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
             val macPadding = if (OSUtils.isMacOSX()) PaddingValues(top = 18.dp) else PaddingValues()
-            Row(modifier = Modifier.padding(macPadding).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                var arg by mutableStateOf("")
+            Row(
+                modifier = Modifier.padding(macPadding).padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                var selectedTask: Task? by remember { mutableStateOf(null) }
 
-                SidebarScreen(onSendArgs = { arg = it })
+                SidebarScreen(onTaskSelected = { selectedTask = it })
                 BaseContainer(modifier = Modifier.fillMaxSize()) {
-                    Text(arg)
+                    selectedTask?.let {
+                        Text(it.name)
+                    }
                 }
             }
         }

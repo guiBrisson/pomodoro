@@ -35,15 +35,17 @@ fun TasksComponent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     tasks: List<Task>?,
+    onTaskSelected: (Task?) -> Unit,
     onClearCompletedTasks: () -> Unit,
     onClearAllTasks: () -> Unit,
     onEdit: (Task) -> Unit,
     onDone: (Task) -> Unit,
     onRestart: (Task) -> Unit,
     onDelete: (Task) -> Unit,
-
-    ) {
+) {
     var selectedTask: Task? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(selectedTask) { onTaskSelected(selectedTask) }
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (isLoading) {

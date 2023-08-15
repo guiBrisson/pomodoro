@@ -16,7 +16,7 @@ import ui.components.TasksComponent
 @Composable
 fun SidebarScreen(
     modifier: Modifier = Modifier,
-    onSendArgs: (String) -> Unit,
+    onTaskSelected: (Task?) -> Unit,
 ) {
     val viewModel: SidebarViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -24,7 +24,7 @@ fun SidebarScreen(
     SidebarScreen(
         modifier = modifier,
         uiState = uiState,
-        onSendArgs = onSendArgs,
+        onTaskSelected = onTaskSelected,
         onClearCompletedTasks = { viewModel.handleEvents(SidebarEvent.ClearCompletedTasks) },
         onClearAllTasks = { viewModel.handleEvents(SidebarEvent.ClearAllTasks) },
         onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) },
@@ -39,9 +39,9 @@ fun SidebarScreen(
 internal fun SidebarScreen(
     modifier: Modifier = Modifier,
     uiState: SidebarUiState,
+    onTaskSelected: (Task?) -> Unit,
     onClearCompletedTasks: () -> Unit,
     onClearAllTasks: () -> Unit,
-    onSendArgs: (String) -> Unit,
     onAddTask: (Task) -> Unit,
     onTaskEdit: (Task) -> Unit,
     onTaskDone: (Task) -> Unit,
@@ -51,11 +51,12 @@ internal fun SidebarScreen(
     BaseContainer(modifier = modifier.width(340.dp).fillMaxHeight()) {
         var taskToEdit: Task? by remember { mutableStateOf(null) }
 
-        SearchComponent(onSearch = { onSendArgs(it) })
+        SearchComponent(onSearch = { /*TODO*/ })
 
         TasksComponent(
             modifier = Modifier.weight(1f),
             tasks = uiState.tasks,
+            onTaskSelected = onTaskSelected,
             isLoading = uiState.loadingTasks,
             onClearCompletedTasks = onClearCompletedTasks,
             onClearAllTasks = onClearAllTasks,
