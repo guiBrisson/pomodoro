@@ -1,5 +1,7 @@
 package ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import domain.model.Task
 import ui.utils.loadSvgPainter
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun TasksComponent(
     modifier: Modifier = Modifier,
@@ -44,26 +47,28 @@ fun TasksComponent(
             CircularProgressIndicator()
         } else {
             tasks?.let { tasks ->
-                if (tasks.isEmpty()) {
-                    TaskEmptyState()
-                } else {
-                    Column {
-                        TaskTitle()
-                        Divider(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp))
-                        LazyColumn(modifier = modifier.fillMaxSize()) {
-                            items(tasks) { task ->
-                                TaskItem(
-                                    task = task,
-                                    isSelected = task == selectedTask,
-                                    onClick = { selectedTask = task },
-                                    onEdit = { onEdit(task) },
-                                    onDone = { onDone(task) },
-                                    onRestart = { onRestart(task) },
-                                    onDelete = {
-                                        if (task == selectedTask) selectedTask = null
-                                        onDelete(task)
-                                    },
-                                )
+                AnimatedContent(tasks.isEmpty()) { isEmpty ->
+                    if (isEmpty) {
+                        TaskEmptyState()
+                    } else {
+                        Column {
+                            TaskTitle()
+                            Divider(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp))
+                            LazyColumn(modifier = modifier.fillMaxSize()) {
+                                items(tasks) { task ->
+                                    TaskItem(
+                                        task = task,
+                                        isSelected = task == selectedTask,
+                                        onClick = { selectedTask = task },
+                                        onEdit = { onEdit(task) },
+                                        onDone = { onDone(task) },
+                                        onRestart = { onRestart(task) },
+                                        onDelete = {
+                                            if (task == selectedTask) selectedTask = null
+                                            onDelete(task)
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
@@ -203,7 +208,7 @@ fun TaskDropdownMenu(
     onRestart: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val itemTextStyle = TextStyle(fontSize = 14.sp)
+    val itemTextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
 
     DropdownMenu(
         modifier = modifier,
