@@ -11,4 +11,6 @@ interface ITaskDao {
     fun selectByName(name: String): List<TaskEntity>
     fun selectAll(): StateFlow<List<TaskEntity>>
     fun delete(id: Int)
+    fun deleteAll()
+    fun deleteCompletedTasks()
 }

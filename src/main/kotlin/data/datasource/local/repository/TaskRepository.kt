@@ -54,6 +54,14 @@ class TaskRepository(
         taskDao.delete(id)
     }
 
+    override suspend fun deleteAll() {
+        taskDao.deleteAll()
+    }
+
+    override suspend fun deleteCompleted() {
+        taskDao.deleteCompletedTasks()
+    }
+
     private fun List<TaskEntity>.asDomain(): List<Task> {
         return map { it.asDomain() }
     }

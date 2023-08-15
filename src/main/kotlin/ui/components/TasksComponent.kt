@@ -35,10 +35,13 @@ fun TasksComponent(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     tasks: List<Task>?,
+    onClearCompletedTasks: () -> Unit,
+    onClearAllTasks: () -> Unit,
     onEdit: (Task) -> Unit,
     onDone: (Task) -> Unit,
     onRestart: (Task) -> Unit,
     onDelete: (Task) -> Unit,
+
 ) {
     var selectedTask: Task? by remember { mutableStateOf(null) }
 
@@ -52,8 +55,13 @@ fun TasksComponent(
                         TaskEmptyState()
                     } else {
                         Column {
-                            TaskTitle()
+                            TaskTitle(
+                                onClearCompletedTasks = onClearCompletedTasks,
+                                onClearAllTasks = onClearAllTasks,
+                            )
+
                             Divider(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 4.dp))
+
                             LazyColumn(modifier = modifier.fillMaxSize()) {
                                 items(tasks) { task ->
                                     TaskItem(
@@ -106,15 +114,29 @@ private fun TaskEmptyState(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TaskTitle(modifier: Modifier = Modifier) {
+private fun TaskTitle(
+    modifier: Modifier = Modifier,
+    onClearCompletedTasks: () -> Unit,
+    onClearAllTasks: () -> Unit,
+) {
+    var popupExpanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier.fillMaxWidth().padding(top = 24.dp, start = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text("My Tasks", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-
-        DotsMenuIconButton(onClick = { })
+        Box {
+            DotsMenuIconButton(onClick = { popupExpanded = true })
+            AllTasksPopup(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                expanded = popupExpanded,
+                onDismissRequest = { popupExpanded = false },
+                onClearCompletedTasks = onClearCompletedTasks,
+                onClearAllTasks = onClearAllTasks,
+            )
+        }
     }
 }
 
@@ -177,28 +199,56 @@ private fun TaskItem(
             color = nameColor,
         )
 
-        Box {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
-                Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
+            Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
+
+            Box {
                 DotsMenuIconButton(onClick = { dropdownExpanded = true })
+                TaskPopup(
+                    modifier = Modifier,
+                    expanded = dropdownExpanded,
+                    task = task,
+                    onDismissRequest = { dropdownExpanded = false },
+                    onEdit = onEdit,
+                    onDone = onDone,
+                    onRestart = onRestart,
+                    onDelete = onDelete,
+                )
             }
-            TaskDropdownMenu(
-                modifier = Modifier.align(Alignment.TopEnd),
-                expanded = dropdownExpanded,
-                task = task,
-                onDismissRequest = { dropdownExpanded = false },
-                onEdit = onEdit,
-                onDone = onDone,
-                onRestart = onRestart,
-                onDelete = onDelete,
-            )
         }
     }
 }
 
 @Composable
-fun TaskDropdownMenu(
+fun AllTasksPopup(
+    modifier: Modifier = Modifier,
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onClearCompletedTasks: () -> Unit,
+    onClearAllTasks: () -> Unit,
+) {
+    PopupMenu(
+        modifier = modifier,
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+    ) {
+        val itemTextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
+
+        PopupMenuItem(onClick = { onDismissRequest(); onClearCompletedTasks() }) {
+            Text("Clear finished tasks", style = itemTextStyle)
+        }
+
+        Divider(Modifier.fillMaxWidth())
+
+        PopupMenuItem(onClick = { onDismissRequest(); onClearAllTasks() }) {
+            Text("Clear all tasks", style = itemTextStyle)
+        }
+    }
+}
+
+@Composable
+fun TaskPopup(
     modifier: Modifier = Modifier,
     task: Task,
     expanded: Boolean,
@@ -208,29 +258,28 @@ fun TaskDropdownMenu(
     onRestart: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val itemTextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
-
-    DropdownMenu(
+    PopupMenu(
         modifier = modifier,
         expanded = expanded,
         onDismissRequest = onDismissRequest,
     ) {
-        val itemModifier = Modifier.height(32.dp).pointerHoverIcon(PointerIcon.Hand)
-        DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onEdit() }) {
+        val itemTextStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
+
+        PopupMenuItem(onClick = { onDismissRequest(); onEdit() }) {
             Text("Edit", style = itemTextStyle)
         }
 
         if (task.isCompleted) {
-            DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onRestart() }) {
+            PopupMenuItem(onClick = { onDismissRequest(); onRestart() }) {
                 Text("Restart", style = itemTextStyle)
             }
         } else {
-            DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onDone() }) {
+            PopupMenuItem(onClick = { onDismissRequest(); onDone() }) {
                 Text("Mark as done", style = itemTextStyle)
             }
         }
 
-        DropdownMenuItem(modifier = itemModifier, onClick = { onDismissRequest(); onDelete() }) {
+        PopupMenuItem(onClick = { onDismissRequest(); onDelete() }) {
             Text("Delete", style = itemTextStyle)
         }
     }

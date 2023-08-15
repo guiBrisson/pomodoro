@@ -102,7 +102,7 @@ private fun AddTaskBox(
     val focusRequester = remember { FocusRequester() }
 
     var name by remember { mutableStateOf("") }
-    var times: Int? by remember { mutableStateOf(null) }
+    var times: Int? by remember { mutableStateOf(1) }
     var isSaveButtonEnable by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {

@@ -5,7 +5,10 @@ import data.datasource.local.entity.TaskEntity
 import data.datasource.local.entity.TaskTable
 import kotlinx.coroutines.flow.*
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.deleteAll
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class TaskDao(
@@ -13,7 +16,6 @@ class TaskDao(
 ) : ITaskDao {
     private val _allTasks: MutableStateFlow<List<TaskEntity>> = MutableStateFlow(allTasks())
     override fun selectAll(): StateFlow<List<TaskEntity>> = _allTasks.asStateFlow()
-
 
     override fun insert(task: TaskDTO): Int {
         return taskTransaction {
@@ -23,7 +25,7 @@ class TaskDao(
                 this.amountDone = task.amountDone
                 this.isCompleted = task.isCompleted
             }.id.value
-        }.also { _allTasks.update { allTasks() } }
+        }
     }
 
     override fun update(id: Int, updatedTask: TaskDTO): TaskEntity? {
@@ -36,7 +38,7 @@ class TaskDao(
                 isCompleted = updatedTask.isCompleted
             }
             task
-        }.also { _allTasks.update { allTasks() } }
+        }
     }
 
     override fun selectById(id: Int): TaskEntity? {
@@ -55,16 +57,28 @@ class TaskDao(
         taskTransaction {
             TaskEntity.findById(id)?.delete()
         }
-        _allTasks.update { allTasks() }
+
+    }
+
+    override fun deleteAll() {
+        taskTransaction {
+            TaskEntity.table.deleteAll()
+        }
+    }
+
+    override fun deleteCompletedTasks() {
+        taskTransaction {
+            TaskTable.deleteWhere { isCompleted.eq(true)}
+        }
     }
 
     private fun allTasks(): List<TaskEntity> {
-        return taskTransaction {
+        return transaction(db) {
             TaskEntity.all().sortedBy { it.id }.toList()
         }
     }
 
     private fun <T> taskTransaction(statement: Transaction.() -> T): T {
-        return transaction(db, statement = statement)
+        return transaction(db, statement = statement).also { _allTasks.update { allTasks() } }
     }
 }
