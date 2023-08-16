@@ -88,7 +88,7 @@ fun PomodoroComponent(
 }
 
 @Composable
-fun ComposeCircularProgressBar(
+private fun ComposeCircularProgressBar(
     modifier: Modifier = Modifier,
     percentage: Float,
     fillColor: Color,
