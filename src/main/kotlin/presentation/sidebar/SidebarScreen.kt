@@ -1,16 +1,8 @@
 package presentation.sidebar
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import core.viewmodel.rememberViewModel
@@ -18,22 +10,32 @@ import domain.model.Task
 import ui.components.AddTaskComponent
 import ui.components.BaseContainer
 import ui.components.SearchComponent
-import ui.theme.PomodoroTheme
+import ui.components.TasksComponent
 
 
 @Composable
 fun SidebarScreen(
     modifier: Modifier = Modifier,
-    onSendArgs: (String) -> Unit,
+    onTaskSelected: (Task?) -> Unit,
 ) {
     val viewModel: SidebarViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(uiState.selectedTask) {
+        onTaskSelected(uiState.selectedTask)
+    }
+
     SidebarScreen(
         modifier = modifier,
         uiState = uiState,
-        onSendArgs = onSendArgs,
-        onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) }
+        onTaskSelected = { viewModel.handleEvents(SidebarEvent.SelectTask(it)) },
+        onClearCompletedTasks = { viewModel.handleEvents(SidebarEvent.ClearCompletedTasks) },
+        onClearAllTasks = { viewModel.handleEvents(SidebarEvent.ClearAllTasks) },
+        onAddTask = { viewModel.handleEvents(SidebarEvent.CreateNewTask(it)) },
+        onTaskEdit = { viewModel.handleEvents(SidebarEvent.EditTask(it)) },
+        onTaskDone = { viewModel.handleEvents(SidebarEvent.MarkTaskAsDone(it)) },
+        onRestart = { viewModel.handleEvents(SidebarEvent.RestartTask(it)) },
+        onTaskDelete = { viewModel.handleEvents(SidebarEvent.DeleteTask(it)) },
     )
 }
 
@@ -41,29 +43,39 @@ fun SidebarScreen(
 internal fun SidebarScreen(
     modifier: Modifier = Modifier,
     uiState: SidebarUiState,
-    onSendArgs: (String) -> Unit,
+    onTaskSelected: (Task?) -> Unit,
+    onClearCompletedTasks: () -> Unit,
+    onClearAllTasks: () -> Unit,
     onAddTask: (Task) -> Unit,
+    onTaskEdit: (Task) -> Unit,
+    onTaskDone: (Task) -> Unit,
+    onRestart: (Task) -> Unit,
+    onTaskDelete: (Task) -> Unit,
 ) {
     BaseContainer(modifier = modifier.width(340.dp).fillMaxHeight()) {
-        SearchComponent(onSearch = { onSendArgs(it) })
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            uiState.tasks?.let { tasks ->
-                items(tasks) { task ->
-                    Text(text = task.name)
-                }
-            }
-        }
-        AddTaskComponent(onAddTask = onAddTask)
-    }
-}
+        var taskToEdit: Task? by remember { mutableStateOf(null) }
 
-@Preview
-@Composable
-private fun PreviewSidebarScreen() {
-    PomodoroTheme {
-        Surface(color = MaterialTheme.colors.background) {
-            val state = SidebarUiState()
-            SidebarScreen(uiState = state, onSendArgs = { }, onAddTask = { })
-        }
+        SearchComponent(onSearch = { /*TODO*/ })
+
+        TasksComponent(
+            modifier = Modifier.weight(1f),
+            tasks = uiState.tasks,
+            selectedTask = uiState.selectedTask,
+            onTaskSelected = onTaskSelected,
+            isLoading = uiState.loadingTasks,
+            onClearCompletedTasks = onClearCompletedTasks,
+            onClearAllTasks = onClearAllTasks,
+            onEdit = { taskToEdit = it },
+            onDone = onTaskDone,
+            onRestart = onRestart,
+            onDelete = onTaskDelete,
+        )
+
+        AddTaskComponent(
+            task = taskToEdit,
+            onAddTask = onAddTask,
+            onSaveEdit = { onTaskEdit(it); taskToEdit = null },
+            onCancel = { taskToEdit = null }
+        )
     }
 }

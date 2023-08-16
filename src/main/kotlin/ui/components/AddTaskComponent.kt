@@ -27,9 +27,16 @@ import domain.model.Task
 @Composable
 fun AddTaskComponent(
     modifier: Modifier = Modifier,
+    task: Task? = null,
     onAddTask: (Task) -> Unit,
+    onSaveEdit: (Task) -> Unit,
+    onCancel: () -> Unit,
 ) {
     var currentState by remember { mutableStateOf(AddTaskComponentState.Collapsed) }
+
+    LaunchedEffect(task) {
+        task?.let{ currentState = AddTaskComponentState.Expanded }
+    }
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         AddTaskButton(state = currentState, onClick = {
@@ -41,11 +48,13 @@ fun AddTaskComponent(
         })
         AnimatedVisibility(currentState == AddTaskComponentState.Expanded) {
             AddTaskBox(
+                task = task,
                 onCancel = {
                     currentState = AddTaskComponentState.Collapsed
+                    onCancel()
                 },
                 onSave = {
-                    onAddTask(it)
+                    if (task == null) onAddTask(it) else onSaveEdit(it)
                     currentState = AddTaskComponentState.Collapsed
                 },
             )
@@ -85,6 +94,7 @@ private fun AddTaskButton(
 @Composable
 private fun AddTaskBox(
     modifier: Modifier = Modifier,
+    task: Task? = null,
     onCancel: () -> Unit,
     onSave: (Task) -> Unit,
 ) {
@@ -92,11 +102,15 @@ private fun AddTaskBox(
     val focusRequester = remember { FocusRequester() }
 
     var name by remember { mutableStateOf("") }
-    var times: Int? by remember { mutableStateOf(null) }
+    var times: Int? by remember { mutableStateOf(1) }
     var isSaveButtonEnable by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+        task?.let {
+            name = it.name
+            times = it.totalAmount
+        }
     }
 
     LaunchedEffect(name, times) {
@@ -116,7 +130,7 @@ private fun AddTaskBox(
         BasicTextField(
             modifier = Modifier.focusRequester(focusRequester),
             value = name,
-            onValueChange = { name = it },
+            onValueChange = { if (it.length <= 360) name = it },
             textStyle = textStyle.copy(color = MaterialTheme.colors.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colors.onSurface),
             decorationBox = { innerTextField ->
@@ -132,7 +146,7 @@ private fun AddTaskBox(
             }
         )
 
-        Text(modifier = Modifier.padding(top = 18.dp), text = "Est Pomodoros", fontWeight = FontWeight.Medium)
+        Text(modifier = Modifier.padding(top = 18.dp), text = "Est Pomodoro", fontWeight = FontWeight.Medium)
 
         Row(modifier = Modifier.padding(top = 4.dp)) {
             BasicTextField(
@@ -200,12 +214,11 @@ private fun AddTaskBox(
             Button(
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).padding(start = 12.dp),
                 onClick = {
-                    val task = Task(
-                        name = name,
-                        pomodoroAmount = times ?: 0,
-                        isCompleted = false,
-                    )
-                    onSave(task)
+                    times?.let { times ->
+                        val task1 = task?.copy(name = name , totalAmount = times)
+                            ?: Task(name = name, totalAmount = times)
+                        onSave(task1)
+                    }
                 },
                 enabled = isSaveButtonEnable,
                 colors = ButtonDefaults.buttonColors(

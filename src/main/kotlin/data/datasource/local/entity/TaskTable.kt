@@ -8,7 +8,8 @@ import org.jetbrains.exposed.sql.Column
 
 object TaskTable: IntIdTable() {
     val name: Column<String> = varchar("name", 360)
-    val pomodoroAmount: Column<Int> = integer("pomodoro_amount")
+    val totalAmount: Column<Int> = integer("total_amount")
+    val amountDone: Column<Int> = integer("amount_done")
     val isCompleted: Column<Boolean> = bool("is_completed")
 }
 
@@ -16,6 +17,7 @@ class TaskEntity(id: EntityID<Int>): IntEntity(id) {
     companion object: IntEntityClass<TaskEntity>(TaskTable)
 
     var name by TaskTable.name
-    var pomodoroAmount by TaskTable.pomodoroAmount
+    var totalAmount by TaskTable.totalAmount
+    var amountDone by TaskTable.amountDone
     var isCompleted by TaskTable.isCompleted
 }

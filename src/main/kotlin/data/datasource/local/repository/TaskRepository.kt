@@ -30,7 +30,8 @@ class TaskRepository(
                 id = id,
                 updatedTask = TaskDTO(
                     name = task.name,
-                    pomodoroAmount = task.pomodoroAmount,
+                    totalAmount = task.totalAmount,
+                    amountDone = task.amountDone,
                     isCompleted = task.isCompleted,
                 )
             )?.asDomain()
@@ -42,7 +43,8 @@ class TaskRepository(
         return taskDao.insert(
             TaskDTO(
                 name = task.name,
-                pomodoroAmount = task.pomodoroAmount,
+                totalAmount = task.totalAmount,
+                amountDone = task.amountDone,
                 isCompleted = task.isCompleted,
             )
         )
@@ -50,6 +52,14 @@ class TaskRepository(
 
     override suspend fun deleteTask(id: Int) {
         taskDao.delete(id)
+    }
+
+    override suspend fun deleteAll() {
+        taskDao.deleteAll()
+    }
+
+    override suspend fun deleteCompleted() {
+        taskDao.deleteCompletedTasks()
     }
 
     private fun List<TaskEntity>.asDomain(): List<Task> {
@@ -60,7 +70,8 @@ class TaskRepository(
         return Task(
             id = this.id.value,
             name = this.name,
-            pomodoroAmount = this.pomodoroAmount,
+            totalAmount = this.totalAmount,
+            amountDone = this.amountDone,
             isCompleted = this.isCompleted
         )
     }
