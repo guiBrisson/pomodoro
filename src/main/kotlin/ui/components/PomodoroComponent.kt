@@ -1,5 +1,6 @@
 package ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -7,6 +8,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -33,7 +35,9 @@ fun PomodoroComponent(
     onStop: () -> Unit,
     onNext: () -> Unit,
 ) {
-    val progress: Float = timerValue.toFloat() / timerTotal
+    val progress: Float by animateFloatAsState(
+        targetValue = timerValue.toFloat() / timerTotal
+    )
 
     Box(modifier = modifier) {
         ComposeCircularProgressBar(
