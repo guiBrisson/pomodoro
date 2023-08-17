@@ -46,53 +46,61 @@ fun PomodoroComponent(
         targetValue = timerValue.toFloat() / timerTotal
     )
 
-    Box(modifier = modifier) {
-        ComposeCircularProgressBar(
-            modifier = Modifier.fillMaxSize(),
-            percentage = progress,
-            fillColor = MaterialTheme.colors.primary,
-            backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.2f),
-            strokeWidth = 16.dp,
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            modifier = Modifier.padding(bottom = 40.dp),
+            text = currentPomodoroEvent.title,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 24.sp,
         )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = formatSecondsToMinutesSeconds(timerValue),
-                fontSize = 80.sp,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onSurface
+        Box(modifier = Modifier.size(400.dp)) {
+            ComposeCircularProgressBar(
+                modifier = Modifier.fillMaxSize(),
+                percentage = progress,
+                fillColor = MaterialTheme.colors.primary,
+                backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.2f),
+                strokeWidth = 16.dp,
             )
-
-            Spacer(modifier = Modifier.padding(vertical = 20.dp))
-
-            Row(
-                modifier = Modifier,
-                horizontalArrangement = Arrangement.spacedBy(36.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                //Todo: remove this button
-                IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = { }) {
-                    Icon(painter = loadSvgPainter("icons/ic_stop.svg"), contentDescription = null)
-                }
+                Text(
+                    text = formatSecondsToMinutesSeconds(timerValue),
+                    fontSize = 80.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onSurface
+                )
 
-                if (isTimeRunning) {
-                    IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onPause) {
-                        Icon(painter = loadSvgPainter("icons/ic_pause.svg"), contentDescription = null)
+                Spacer(modifier = Modifier.padding(vertical = 20.dp))
+
+                Row(
+                    modifier = Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(36.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    //Todo: remove this button
+                    IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = { }) {
+                        Icon(painter = loadSvgPainter("icons/ic_stop.svg"), contentDescription = null)
                     }
-                } else {
-                    IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onResume) {
-                        Icon(painter = loadSvgPainter("icons/ic_play.svg"), contentDescription = null)
+
+                    if (isTimeRunning) {
+                        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onPause) {
+                            Icon(painter = loadSvgPainter("icons/ic_pause.svg"), contentDescription = null)
+                        }
+                    } else {
+                        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onResume) {
+                            Icon(painter = loadSvgPainter("icons/ic_play.svg"), contentDescription = null)
+                        }
                     }
-                }
 
-                IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onNext) {
-                    Icon(painter = loadSvgPainter("icons/ic_next.svg"), contentDescription = null)
-                }
+                    IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onNext) {
+                        Icon(painter = loadSvgPainter("icons/ic_next.svg"), contentDescription = null)
+                    }
 
+                }
             }
         }
     }
