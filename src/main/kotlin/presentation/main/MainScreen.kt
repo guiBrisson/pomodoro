@@ -22,21 +22,19 @@ fun MainScreen(
 ) {
     val viewModel: MainViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
-    val totalSeconds = (1 * 60)
 
     LaunchedEffect(Unit) {
         viewModel.setSelectedTask(selectedTask)
-        viewModel.handleEvents(MainEvent.SetupTimer(totalSeconds))
+        viewModel.startTimer()
     }
 
     MainScreen(
         modifier = modifier,
         uiState = uiState,
         selectedTask = uiState.selectedTask,
-        timerTotal = totalSeconds,
         onResume = { viewModel.handleEvents(MainEvent.ResumeTimer) },
         onPause = { viewModel.handleEvents(MainEvent.PauseTimer) },
-        onStop = { viewModel.handleEvents(MainEvent.StopTimer) },
+        onNext = { viewModel.handleEvents(MainEvent.NextEvent) }
     )
 }
 
@@ -46,10 +44,9 @@ internal fun MainScreen(
     modifier: Modifier = Modifier,
     uiState: MainUiState,
     selectedTask: Task?,
-    timerTotal: Int,
     onResume: () -> Unit,
     onPause: () -> Unit,
-    onStop: () -> Unit
+    onNext: () -> Unit,
 ) {
     BaseContainer(
         modifier = modifier.fillMaxSize(),
@@ -60,11 +57,10 @@ internal fun MainScreen(
             modifier = Modifier.size(400.dp),
             timerValue = uiState.timer ?: 0,
             isTimeRunning = uiState.isTimerRunning,
-            timerTotal = timerTotal,
+            currentPomodoroEvent = uiState.currentPomodoroEvent,
             onResume = onResume,
             onPause = onPause,
-            onStop = onStop,
-            onNext = { /*TODO*/ }
+            onNext = onNext
         )
     }
 }

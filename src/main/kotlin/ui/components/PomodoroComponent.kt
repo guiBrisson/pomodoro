@@ -23,18 +23,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ui.utils.loadSvgPainter
+import utils.PomodoroEvent
+import utils.PomodoroSettings
 
 @Composable
 fun PomodoroComponent(
     modifier: Modifier = Modifier,
     timerValue: Int,
     isTimeRunning: Boolean,
-    timerTotal: Int,
+    currentPomodoroEvent: PomodoroEvent,
     onResume: () -> Unit,
     onPause: () -> Unit,
-    onStop: () -> Unit,
     onNext: () -> Unit,
 ) {
+    val timerTotal = when(currentPomodoroEvent) {
+        PomodoroEvent.FOCUS -> PomodoroSettings.focusTimeInSeconds
+        PomodoroEvent.REST -> PomodoroSettings.restTimeInSeconds
+        PomodoroEvent.LONG_REST -> PomodoroSettings.longRestTimeInSeconds
+    }
+
     val progress: Float by animateFloatAsState(
         targetValue = timerValue.toFloat() / timerTotal
     )
@@ -67,7 +74,8 @@ fun PomodoroComponent(
                 horizontalArrangement = Arrangement.spacedBy(36.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onStop) {
+                //Todo: remove this button
+                IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = { }) {
                     Icon(painter = loadSvgPainter("icons/ic_stop.svg"), contentDescription = null)
                 }
 
