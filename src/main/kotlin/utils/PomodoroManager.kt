@@ -9,12 +9,6 @@ class PomodoroManager(private val sessions: Int) {
     var onEvent: ((PomodoroEvent) -> Unit)? = null
     var onPomodoroFinish: (() -> Unit)? = null
 
-    init {
-        if (sessions > 0) {
-            timer = setupTimer(eventSessions[currentEventIndex])
-        }
-    }
-
     private fun calculateEventSession(): List<PomodoroEvent> {
         val sessionList = mutableListOf<PomodoroEvent>()
         for (session in (sessions * 2) downTo 1) {
@@ -70,7 +64,10 @@ class PomodoroManager(private val sessions: Int) {
     }
 
     fun startTimer() {
-        timer?.start()
+        if (sessions > 0) {
+            timer = setupTimer(eventSessions[currentEventIndex])
+            timer?.start()
+        }
     }
 
     fun stop() {

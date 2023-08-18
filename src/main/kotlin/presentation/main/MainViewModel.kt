@@ -9,11 +9,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import utils.PomodoroEvent
 import utils.PomodoroManager
 
-class MainViewModel (
+class MainViewModel(
     private val taskRepository: ITaskRepository,
-): ViewModel() {
+) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
@@ -22,14 +23,25 @@ class MainViewModel (
     private fun getPomodoroManager(sessions: Int): PomodoroManager {
         return PomodoroManager(sessions).apply {
             onEvent = { event ->
+                println("current pomodoro event: $event")
                 _uiState.update { it.copy(currentPomodoroEvent = event) }
+
+                _uiState.value.selectedTask?.let { _ ->
+                    if (event != PomodoroEvent.FOCUS) {
+                        // todo: needs to complete a pomodoro
+
+                    }
+                }
             }
+
             onTick = { seconds ->
+                println(seconds)
                 _uiState.update { it.copy(timer = seconds, isTimerRunning = true) }
             }
+
             onPomodoroFinish = {
-                pomodoroManager.stop()
                 finishCurrentTask()
+                stopTimer()
             }
         }
     }
@@ -42,34 +54,31 @@ class MainViewModel (
         }
     }
 
-    private fun onNext() {
-        updateCurrentTask()
-        pomodoroManager.nextSection()
-    }
-
     private fun finishCurrentTask() {
-        _uiState.update { it.copy(timer = 0, isTimerRunning = false) }
-
         _uiState.value.selectedTask?.let { selectedTask ->
             viewModelScope.launch(Dispatchers.IO) {
-                val amountDone = selectedTask.amountDone + 1
-                val isCompleted = (selectedTask.amountDone == selectedTask.totalAmount)
-                val updatedTask = selectedTask.copy(amountDone = amountDone, isCompleted = isCompleted)
-
+                val totalAmount = selectedTask.totalAmount
+                val updatedTask = selectedTask.copy(isCompleted = true, amountDone = totalAmount)
                 taskRepository.updateTask(updatedTask)
             }
         }
     }
 
-    private fun updateCurrentTask() {
+    private fun onNext() {
         _uiState.value.selectedTask?.let { selectedTask ->
-            viewModelScope.launch(Dispatchers.IO) {
-
-            }
+            if (selectedTask.isCompleted || selectedTask.amountDone == selectedTask.totalAmount) return
         }
+
+        pomodoroManager.nextSection()
     }
 
     fun startTimer() {
+        stopTimer()
+        val task = _uiState.value.selectedTask
+
+        val sessions = task?.totalAmount ?: 999
+        pomodoroManager = getPomodoroManager(sessions)
+
         pomodoroManager.startTimer()
         _uiState.update { it.copy(isTimerRunning = true) }
     }
@@ -84,11 +93,17 @@ class MainViewModel (
         _uiState.update { it.copy(isTimerRunning = true) }
     }
 
+    private fun stopTimer() {
+        pomodoroManager.stop()
+        _uiState.update { it.copy(timer = 0, isTimerRunning = false) }
+    }
+
     fun setSelectedTask(task: Task?) {
         _uiState.update { it.copy(selectedTask = task) }
-        pomodoroManager.stop()
-        task?.let {
-            pomodoroManager = getPomodoroManager(it.totalAmount - it.amountDone)
-        }
+
+        stopTimer()
+        if (task != null && (task.isCompleted || task.amountDone == task.totalAmount)) return
+
+        startTimer()
     }
 }

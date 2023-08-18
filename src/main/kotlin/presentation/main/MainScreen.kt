@@ -23,6 +23,9 @@ fun MainScreen(
 
     LaunchedEffect(selectedTask) {
         viewModel.setSelectedTask(selectedTask)
+    }
+
+    LaunchedEffect(Unit) {
         viewModel.startTimer()
     }
 
