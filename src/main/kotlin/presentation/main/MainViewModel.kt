@@ -22,6 +22,7 @@ class MainViewModel(
 
     private fun getPomodoroManager(sessions: Int): PomodoroManager {
         return PomodoroManager(sessions).apply {
+            // todo-fix: first event does not show
             onEvent = { event ->
                 println("current pomodoro event: $event")
                 _uiState.update { it.copy(currentPomodoroEvent = event) }
@@ -35,7 +36,6 @@ class MainViewModel(
             }
 
             onTick = { seconds ->
-                println(seconds)
                 _uiState.update { it.copy(timer = seconds, isTimerRunning = true) }
             }
 
