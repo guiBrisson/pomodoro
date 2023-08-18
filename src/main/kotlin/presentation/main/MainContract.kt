@@ -5,10 +5,11 @@ import utils.PomodoroEvent
 
 data class MainUiState(
     val selectedTask: Task? = null,
-    val currentPomodoroEvent: PomodoroEvent = PomodoroEvent.FOCUS,
+    val loading: Boolean = false,
+
     val timer: Int? = null,
     val isTimerRunning: Boolean = false,
-    val loading: Boolean = false,
+    val currentPomodoroEvent: PomodoroEvent = PomodoroEvent.FOCUS,
 )
 
 sealed interface MainEvent {

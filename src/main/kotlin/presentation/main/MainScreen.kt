@@ -21,7 +21,7 @@ fun MainScreen(
     val viewModel: MainViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedTask) {
         viewModel.setSelectedTask(selectedTask)
         viewModel.startTimer()
     }
@@ -53,6 +53,7 @@ internal fun MainScreen(
     ) {
         PomodoroComponent(
             modifier = Modifier,
+            selectedTask = selectedTask,
             timerValue = uiState.timer ?: 0,
             isTimeRunning = uiState.isTimerRunning,
             currentPomodoroEvent = uiState.currentPomodoroEvent,

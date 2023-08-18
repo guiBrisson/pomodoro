@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import domain.model.Task
 import ui.utils.loadSvgPainter
 import utils.PomodoroEvent
 import utils.PomodoroSettings
@@ -29,6 +30,7 @@ import utils.PomodoroSettings
 @Composable
 fun PomodoroComponent(
     modifier: Modifier = Modifier,
+    selectedTask: Task?,
     timerValue: Int,
     isTimeRunning: Boolean,
     currentPomodoroEvent: PomodoroEvent,
@@ -36,7 +38,7 @@ fun PomodoroComponent(
     onPause: () -> Unit,
     onNext: () -> Unit,
 ) {
-    val timerTotal = when(currentPomodoroEvent) {
+    val timerTotal = when (currentPomodoroEvent) {
         PomodoroEvent.FOCUS -> PomodoroSettings.focusTimeInSeconds
         PomodoroEvent.REST -> PomodoroSettings.restTimeInSeconds
         PomodoroEvent.LONG_REST -> PomodoroSettings.longRestTimeInSeconds
@@ -47,12 +49,43 @@ fun PomodoroComponent(
     )
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        val isTaskComplete = (selectedTask?.isCompleted == true)
+        val titleText = if (isTaskComplete) {
+            "TASK COMPLETED"
+        } else {
+            currentPomodoroEvent.title
+        }
+
         Text(
-            modifier = Modifier.padding(bottom = 40.dp),
-            text = currentPomodoroEvent.title,
+            modifier = Modifier.padding(bottom = 4.dp),
+            text = titleText,
             fontWeight = FontWeight.SemiBold,
             fontSize = 24.sp,
         )
+        if (!isTaskComplete) {
+            selectedTask?.let { selectedTask ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = selectedTask.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colors.onSurface,
+                    )
+                    Text(
+                        text = "#${selectedTask.amountDone}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.padding(bottom = 40.dp))
+
         Box(modifier = Modifier.size(400.dp)) {
             ComposeCircularProgressBar(
                 modifier = Modifier.fillMaxSize(),

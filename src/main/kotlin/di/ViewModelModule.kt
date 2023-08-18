@@ -6,5 +6,5 @@ import presentation.sidebar.SidebarViewModel
 
 val viewModelModule = module {
     single { SidebarViewModel(get()) }
-    single { MainViewModel() }
+    single { MainViewModel(get()) }
 }
