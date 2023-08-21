@@ -7,11 +7,11 @@ class PomodoroManager(private val sessions: Int) {
 
     var onTick: ((Int) -> Unit)? = null
     var onEvent: ((PomodoroEvent) -> Unit)? = null
-    var onPomodoroFinish: (() -> Unit)? = null
+//    var onPomodoroFinish: (() -> Unit)? = null
 
     private fun calculateEventSession(): List<PomodoroEvent> {
         val sessionList = mutableListOf<PomodoroEvent>()
-        for (session in (sessions * 2) downTo 1) {
+        for (session in sessions downTo 1) {
             val event: PomodoroEvent = when {
                 session % 8 == 0 -> PomodoroEvent.LONG_REST // long rest after every 4 focus sessions
                 session % 2 == 0 -> PomodoroEvent.REST // rest after focus sessions
@@ -26,12 +26,9 @@ class PomodoroManager(private val sessions: Int) {
             if (sessionList.size % 2 == 0) {
                 sessionList.removeFirst()
             }
-
-            updateOnEvent(sessionList.first())
         }
 
         return sessionList.reversed()
-
     }
 
     private fun updateOnEvent(event: PomodoroEvent) = onEvent?.invoke(event)
@@ -45,29 +42,18 @@ class PomodoroManager(private val sessions: Int) {
         return CountDownTimer(
             durationInSeconds = duration,
             onTick = { onTick?.invoke(it) },
-            onFinish = this::nextSection
+            onFinish = {  }
         )
     }
 
-    fun nextSection() {
-        stop() // stop current timer
-        if (currentEventIndex < eventSessions.size - 1) {
-            currentEventIndex++
-            val nextEvent = eventSessions[currentEventIndex]
-            timer = setupTimer(nextEvent)
-
-            startTimer()
-            updateOnEvent(nextEvent)
-        } else run {
-            onPomodoroFinish?.invoke()
-        }
+    fun nextSection(nextEventIndex: ((Int) -> Unit)? = null) {
+        val nextIndex = currentEventIndex + 1
+        nextEventIndex?.invoke(nextIndex)
+        updateCurrentEventIndex(nextIndex)
     }
 
-    fun startTimer() {
-        if (sessions > 0) {
-            timer = setupTimer(eventSessions[currentEventIndex])
-            timer?.start()
-        }
+    fun startTimer(eventIndex: Int = 0) {
+        updateCurrentEventIndex(eventIndex)
     }
 
     fun stop() {
@@ -83,4 +69,14 @@ class PomodoroManager(private val sessions: Int) {
         timer?.resume()
     }
 
+    private fun updateCurrentEventIndex(index: Int) {
+        stop()
+        if (eventSessions.isNotEmpty() && index <= eventSessions.size - 1) {
+            currentEventIndex = index
+            val nextEvent = eventSessions[currentEventIndex]
+            timer = setupTimer(nextEvent)
+            updateOnEvent(nextEvent)
+            timer?.start()
+        }
+    }
 }

@@ -196,7 +196,7 @@ private fun TaskItem(
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-            val text = if (task.isCompleted) "All done!" else "${task.amountDone}/${task.totalAmount}"
+            val text = if (task.isCompleted) "All done!" else "${task.amountDone()}/${task.totalAmount()}"
             Text(text = text, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
 
             Box {

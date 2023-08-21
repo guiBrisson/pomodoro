@@ -35,7 +35,7 @@ fun AddTaskComponent(
     var currentState by remember { mutableStateOf(AddTaskComponentState.Collapsed) }
 
     LaunchedEffect(task) {
-        task?.let{ currentState = AddTaskComponentState.Expanded }
+        task?.let { currentState = AddTaskComponentState.Expanded }
     }
 
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -105,11 +105,11 @@ private fun AddTaskBox(
     var times: Int? by remember { mutableStateOf(1) }
     var isSaveButtonEnable by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(task) {
         focusRequester.requestFocus()
         task?.let {
             name = it.name
-            times = it.totalAmount
+            times = it.totalAmount()
         }
     }
 
@@ -214,8 +214,8 @@ private fun AddTaskBox(
             Button(
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).padding(start = 12.dp),
                 onClick = {
-                    times?.let { times ->
-                        val task1 = task?.copy(name = name , totalAmount = times)
+                    times?.times(2)?.let { times ->
+                        val task1 = task?.copy(name = name, totalAmount = times)
                             ?: Task(name = name, totalAmount = times)
                         onSave(task1)
                     }

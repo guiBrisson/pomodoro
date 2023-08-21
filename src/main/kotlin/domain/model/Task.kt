@@ -7,11 +7,19 @@ data class Task(
     val amountDone: Int,
     val isCompleted: Boolean,
 ) {
-    constructor(name: String, totalAmount: Int): this(
+    constructor(name: String, totalAmount: Int) : this(
         null,
-        name = name,
-        totalAmount = totalAmount,
-         0,
-         false,
+        name,
+        totalAmount,
+        0,
+        false
     )
+
+    fun amountDone(): Int {
+        return (amountDone + 1) / 2
+    }
+
+    fun totalAmount(): Int {
+        return totalAmount / 2
+    }
 }

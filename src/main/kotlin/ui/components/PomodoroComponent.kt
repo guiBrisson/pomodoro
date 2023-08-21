@@ -75,7 +75,7 @@ fun PomodoroComponent(
                         color = MaterialTheme.colors.onSurface,
                     )
                     Text(
-                        text = "#${selectedTask.amountDone}",
+                        text = "#${selectedTask.amountDone()}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),

@@ -21,10 +21,10 @@ fun MainScreen(
     val viewModel: MainViewModel = rememberViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    // todo: find a better way to transfer current selected task
-    // todo: or work with the amount doubled, and the even numbers being focus sessions
     LaunchedEffect(selectedTask) {
-        viewModel.setSelectedTask(selectedTask)
+        if (uiState.selectedTask != selectedTask) {
+            viewModel.setSelectedTask(selectedTask)
+        }
     }
 
     LaunchedEffect(Unit) {
