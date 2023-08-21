@@ -1,8 +1,10 @@
 package di
 
 import org.koin.dsl.module
+import presentation.main.MainViewModel
 import presentation.sidebar.SidebarViewModel
 
-val viewModelsModule = module {
+val viewModelModule = module {
     single { SidebarViewModel(get()) }
+    single { MainViewModel(get()) }
 }

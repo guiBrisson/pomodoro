@@ -1,7 +1,6 @@
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -10,11 +9,11 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import data.datasource.local.di.localDataModule
-import di.viewModelsModule
+import di.viewModelModule
 import domain.model.Task
 import org.koin.core.context.startKoin
+import presentation.main.MainScreen
 import presentation.sidebar.SidebarScreen
-import ui.components.BaseContainer
 import ui.theme.PomodoroTheme
 import utils.OSUtils
 import utils.setupMac
@@ -27,7 +26,7 @@ fun main() = application {
     UIManager.setLookAndFeel(FlatMacDarkLaf())
 
     startKoin {
-        modules(localDataModule, viewModelsModule)
+        modules(localDataModule, viewModelModule)
     }
 
     Window(onCloseRequest = ::exitApplication, state = state) {
@@ -50,11 +49,7 @@ fun App() {
                 var selectedTask: Task? by remember { mutableStateOf(null) }
 
                 SidebarScreen(onTaskSelected = { selectedTask = it })
-                BaseContainer(modifier = Modifier.fillMaxSize()) {
-                    selectedTask?.let {
-                        Text(it.name)
-                    }
-                }
+                MainScreen(selectedTask = selectedTask)
             }
         }
     }
