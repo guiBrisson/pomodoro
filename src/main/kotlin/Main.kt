@@ -1,3 +1,4 @@
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -13,6 +14,7 @@ import di.viewModelModule
 import domain.model.Task
 import org.koin.core.context.startKoin
 import presentation.main.MainScreen
+import presentation.settings.SettingsScreen
 import presentation.sidebar.SidebarScreen
 import ui.theme.PomodoroTheme
 import utils.OSUtils
@@ -47,9 +49,28 @@ fun App() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 var selectedTask: Task? by remember { mutableStateOf(null) }
+                var isSettingsOpened by remember { mutableStateOf(false) }
 
                 SidebarScreen(onTaskSelected = { selectedTask = it })
-                MainScreen(selectedTask = selectedTask)
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AnimatedVisibility(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        visible = isSettingsOpened,
+                        enter = slideInHorizontally { it / 2 } + fadeIn(),
+                        exit = slideOutHorizontally { it / 2 } + fadeOut(),
+                    ) {
+                        SettingsScreen(onClose = { isSettingsOpened = false })
+                    }
+
+                    MainScreen(
+                        selectedTask = selectedTask,
+                        isCollapsed = isSettingsOpened,
+                        onSetting = { isSettingsOpened = true },
+                    )
+                }
+
+
             }
         }
     }

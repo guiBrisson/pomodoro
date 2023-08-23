@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun BaseContainer(
     modifier: Modifier = Modifier,
+    internalPadding: PaddingValues = PaddingValues(12.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable (ColumnScope.() -> Unit)
@@ -21,7 +22,7 @@ fun BaseContainer(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colors.surface)
-            .padding(12.dp),
+            .padding(internalPadding),
         content = content,
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
