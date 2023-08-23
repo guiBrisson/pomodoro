@@ -1,15 +1,14 @@
 package ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,9 +33,11 @@ import ui.utils.loadSvgPainter
 import utils.PomodoroEvent
 import utils.PomodoroSettings
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PomodoroComponent(
     modifier: Modifier = Modifier,
+    isCollapsed: Boolean,
     selectedTask: Task?,
     timerValue: Int,
     isTimeRunning: Boolean,
@@ -54,104 +56,251 @@ fun PomodoroComponent(
     val progress: Float by animateFloatAsState(
         targetValue = timerValue.toFloat() / timerTotal
     )
-    Box(modifier = modifier) {
 
-        SettingButtons(modifier = Modifier.align(Alignment.TopEnd), onClick = onSetting)
+    val isTaskComplete = (selectedTask?.isCompleted == true)
+    val titleText = if (isTaskComplete) {
+        "TASK COMPLETED"
+    } else {
+        currentPomodoroEvent.title
+    }
 
-        Column(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    AnimatedContent(isCollapsed) { collapsed ->
+        if (collapsed) {
+            CollapsedPomodoro(
+                modifier = modifier,
+                title = titleText,
+                progress = progress,
+                timer = formatSecondsToMinutesSeconds(timerValue),
+                isTimeRunning = isTimeRunning,
+                selectedTask = selectedTask,
+                onResume = onResume,
+                onPause = onPause,
+                onNext = onNext,
+            )
+        } else {
+            ExpandedPomodoro(
+                modifier = modifier.fillMaxSize(),
+                title = titleText,
+                progress = progress,
+                timer = formatSecondsToMinutesSeconds(timerValue),
+                isTimeRunning = isTimeRunning,
+                selectedTask = selectedTask,
+                onSetting = onSetting,
+                onResume = onResume,
+                onPause = onPause,
+                onNext = onNext,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CollapsedPomodoro(
+    modifier: Modifier = Modifier,
+    title: String,
+    progress: Float,
+    timer: String,
+    selectedTask: Task?,
+    isTimeRunning: Boolean,
+    onResume: () -> Unit,
+    onPause: () -> Unit,
+    onNext: () -> Unit,
+) {
+    BaseContainer(
+        modifier = modifier.fillMaxWidth().height(100.dp),
+        internalPadding = PaddingValues(),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 40.dp).weight(1f).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            val isTaskComplete = (selectedTask?.isCompleted == true)
-            val titleText = if (isTaskComplete) {
-                "TASK COMPLETED"
-            } else {
-                currentPomodoroEvent.title
+            TimerController(
+                isTimeRunning = isTimeRunning,
+                itemsSpacedBy = 16.dp,
+                iconSize = 28.dp,
+                onPause = onPause,
+                onResume = onResume,
+                onNext = onNext,
+            )
+
+            selectedTask?.let { selectedTask ->
+                Text(
+                    modifier = Modifier.weight(1f).padding(horizontal = 40.dp),
+                    text = selectedTask.name,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                )
             }
 
-            Text(
-                modifier = Modifier.padding(bottom = 4.dp),
-                text = titleText,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp,
-            )
-            if (!isTaskComplete) {
-                selectedTask?.let { selectedTask ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = selectedTask.name,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colors.onSurface,
-                        )
-                        Text(
-                            text = "#${selectedTask.amountDone()}",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                        )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
+                )
+
+                Text(
+                    text = timer,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        LinearProgressIndicator(
+            modifier = Modifier.fillMaxWidth().height(8.dp),
+            progress = progress,
+            strokeCap = StrokeCap.Round,
+        )
+    }
+
+}
+
+@Composable
+private fun ExpandedPomodoro(
+    modifier: Modifier = Modifier,
+    title: String,
+    progress: Float,
+    timer: String,
+    selectedTask: Task?,
+    isTimeRunning: Boolean,
+    onSetting: () -> Unit,
+    onResume: () -> Unit,
+    onPause: () -> Unit,
+    onNext: () -> Unit,
+) {
+    BaseContainer {
+        Box(modifier = modifier) {
+
+            SettingButtons(modifier = Modifier.align(Alignment.TopEnd), onClick = onSetting)
+
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                val isTaskComplete = (selectedTask?.isCompleted == true)
+
+
+                Text(
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    text = title,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp,
+                )
+                if (!isTaskComplete) {
+                    selectedTask?.let { selectedTask ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = selectedTask.name,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onSurface,
+                            )
+                            Text(
+                                text = "#${selectedTask.amountDone()}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                            )
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.padding(bottom = 40.dp))
+                Spacer(modifier = Modifier.padding(bottom = 40.dp))
 
-            Box(modifier = Modifier.size(400.dp)) {
-                ComposeCircularProgressBar(
-                    modifier = Modifier.fillMaxSize(),
-                    percentage = progress,
-                    fillColor = MaterialTheme.colors.primary,
-                    backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.2f),
-                    strokeWidth = 16.dp,
-                )
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = formatSecondsToMinutesSeconds(timerValue),
-                        fontSize = 80.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colors.onSurface
+                Box(modifier = Modifier.size(400.dp)) {
+                    ComposeCircularProgressBar(
+                        modifier = Modifier.fillMaxSize(),
+                        percentage = progress,
+                        fillColor = MaterialTheme.colors.primary,
+                        backgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.2f),
+                        strokeWidth = 16.dp,
                     )
-
-                    Spacer(modifier = Modifier.padding(vertical = 20.dp))
-
-                    Row(
-                        modifier = Modifier,
-                        horizontalArrangement = Arrangement.spacedBy(36.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        //Todo: remove this button
-                        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = { }) {
-                            Icon(painter = loadSvgPainter("icons/ic_stop.svg"), contentDescription = null)
-                        }
+                        Text(
+                            text = timer,
+                            fontSize = 80.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colors.onSurface
+                        )
 
-                        if (isTimeRunning) {
-                            IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onPause) {
-                                Icon(painter = loadSvgPainter("icons/ic_pause.svg"), contentDescription = null)
-                            }
-                        } else {
-                            IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onResume) {
-                                Icon(painter = loadSvgPainter("icons/ic_play.svg"), contentDescription = null)
-                            }
-                        }
+                        Spacer(modifier = Modifier.padding(vertical = 20.dp))
 
-                        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onNext) {
-                            Icon(painter = loadSvgPainter("icons/ic_next.svg"), contentDescription = null)
-                        }
-
+                        TimerController(
+                            isTimeRunning = isTimeRunning,
+                            onPause = onPause,
+                            onResume = onResume,
+                            onNext = onNext,
+                        )
                     }
                 }
             }
         }
     }
+}
 
+@Composable
+private fun TimerController(
+    isTimeRunning: Boolean,
+    itemsSpacedBy: Dp = 36.dp,
+    iconSize: Dp = 32.dp,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onNext: () -> Unit
+) {
+    Row(
+        modifier = Modifier,
+        horizontalArrangement = Arrangement.spacedBy(itemsSpacedBy),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        //Todo: change this button to 'restart'
+        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = { }) {
+            Icon(
+                modifier = Modifier.size(iconSize),
+                painter = loadSvgPainter("icons/ic_stop.svg"),
+                contentDescription = null
+            )
+        }
+
+        if (isTimeRunning) {
+            IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onPause) {
+                Icon(
+                    modifier = Modifier.size(iconSize),
+                    painter = loadSvgPainter("icons/ic_pause.svg"),
+                    contentDescription = null
+                )
+            }
+        } else {
+            IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onResume) {
+                Icon(
+                    modifier = Modifier.size(iconSize),
+                    painter = loadSvgPainter("icons/ic_play.svg"),
+                    contentDescription = null
+                )
+            }
+        }
+
+        IconButton(modifier = Modifier.pointerHoverIcon(PointerIcon.Hand), onClick = onNext) {
+            Icon(
+                modifier = Modifier.size(iconSize),
+                painter = loadSvgPainter("icons/ic_next.svg"),
+                contentDescription = null
+            )
+        }
+
+    }
 }
 
 @Composable

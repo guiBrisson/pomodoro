@@ -1,20 +1,12 @@
 package presentation.main
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import core.viewmodel.rememberViewModel
 import domain.model.Task
-import ui.components.BaseContainer
 import ui.components.PomodoroComponent
 
 @Composable
@@ -49,8 +41,6 @@ fun MainScreen(
     )
 }
 
-
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 internal fun MainScreen(
     modifier: Modifier = Modifier,
@@ -62,30 +52,17 @@ internal fun MainScreen(
     onPause: () -> Unit,
     onNext: () -> Unit,
 ) {
-    AnimatedContent(isCollapsed) { collapsed ->
-        if (collapsed) {
-            BaseContainer(
-                modifier = modifier.fillMaxWidth().height(100.dp),
-            ) {
-                Text("collapsed main")
-            }
-        } else {
-            BaseContainer(
-                modifier = modifier.fillMaxSize(),
-            ) {
-                PomodoroComponent(
-                    modifier = Modifier.fillMaxSize(),
-                    selectedTask = selectedTask,
-                    timerValue = uiState.timer ?: 0,
-                    isTimeRunning = uiState.isTimerRunning,
-                    currentPomodoroEvent = uiState.currentPomodoroEvent,
-                    onSetting = onSetting,
-                    onResume = onResume,
-                    onPause = onPause,
-                    onNext = onNext,
-                )
-            }
+    PomodoroComponent(
+        modifier = modifier,
+        isCollapsed = isCollapsed,
+        selectedTask = selectedTask,
+        timerValue = uiState.timer ?: 0,
+        isTimeRunning = uiState.isTimerRunning,
+        currentPomodoroEvent = uiState.currentPomodoroEvent,
+        onSetting = onSetting,
+        onResume = onResume,
+        onPause = onPause,
+        onNext = onNext,
+    )
 
-        }
-    }
 }
